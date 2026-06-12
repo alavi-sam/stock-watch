@@ -28,8 +28,9 @@ async def main():
     async with httpx.AsyncClient() as client:
         for ticker in tickers:
             result = await fetch_ticker_news(ticker, '2026-06-08', '2026-06-08', client)
-            res.append(result)
+            res.extend(result)
 
 
 if __name__ == '__main__':
     asyncio.run(main())
+    print(res[0])
