@@ -1,6 +1,6 @@
 import logging
-from fetch_news import fetch_ticker_news
-from load import insert_raw_json
+from tasks.fetch import fetch_ticker_news
+from tasks.storage import insert_raw_json
 import asyncio
 import httpx
 
