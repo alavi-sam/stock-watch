@@ -57,6 +57,9 @@ services:
     command: webserver
     ports:
       - "8080:8080"
+    networks:
+      - default
+      - proxy
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
@@ -84,3 +87,8 @@ services:
 
 volumes:
   postgres-db-volume:
+
+networks:
+  default:
+  proxy:
+    external: true
