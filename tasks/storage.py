@@ -20,7 +20,14 @@ async def insert_raw_json(content: dict, run_date: datetime | None = None):
         f"/year={run_date.year}/month={run_date.month:02d}/day={run_date.day:02d}/hour={run_date.hour:02d}"
     )
 
-    await s3_client.put_object(
-        key=f"{prefix}/{content['id']}.json",
-        body=json.dumps(content).encode('utf-8')
-    )
+
+    if not await s3_client.object_exists(f"{prefix}/{content['id']}.json"):
+        await s3_client.put_object(
+            key=f"{prefix}/{content['id']}.json",
+            body=json.dumps(content).encode('utf-8')
+        )
+        logger.info(f"Uploaded successfully! {prefix}/{content['id']}.json")
+        return True
+
+    logger.info("Record exists. Skipping!")
+    return False
