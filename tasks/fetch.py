@@ -4,6 +4,9 @@ import logging
 import httpx
 from dotenv import load_dotenv
 
+import trafilatura
+
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -28,3 +31,21 @@ async def fetch_ticker_news(ticker: str, date_from: str, date_to: str, client: h
     except Exception as e:
         logger.error(f"failed fetching {ticker}. Error: {str(e)}")
         return []
+
+
+
+async def parse_article_content(url):
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        response = await client.get(
+            url=url,
+            headers={
+                'User-Agent': (
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                    '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+                )
+            }
+        )
+
+    response.raise_for_status()
+
+    return trafilatura.extract(response.content, favor_recall=True)
