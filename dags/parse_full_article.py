@@ -15,7 +15,9 @@ logger = getLogger(__name__)
 @dag(
         dag_id='parse_full_articles',
         schedule="1 * * * *",
-        start_date=pendulum.datetime(2026, 6, 21)
+        start_date=pendulum.datetime(2026, 6, 21),
+        catchup=False,
+        max_active_runs=1,
 )
 def parse_articles():
     s3_client = BucketWrapper('stock-watcher-article-content')
@@ -61,7 +63,11 @@ def parse_articles():
 
         ticker, news_dt, content, id = row['ticker'], row['news_dt'], row['content'], row['id']
         prefix = f'article_content/ticker={ticker}/year={news_dt.year}/month={news_dt.month}/day={news_dt.day}/hour={news_dt.hour}/'
+
         async def _insert_s3():
+            if await s3_client.object_exists(prefix + f'{id}.txt'):
+                logger.info(f"object {id} already exists. Skipping!")
+                return True
             try:
                 await s3_client.put_object(key=prefix + f'{id}.txt', body=content)
                 logger.info(f"object {id} inserted in bucket successfully!")
