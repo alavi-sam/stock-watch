@@ -32,7 +32,7 @@ def parse_articles():
             async with async_session_local() as client:
                 result = await client.execute(
                     text(
-                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE"
+                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE LIMIT 500"
                     )
                 )
                 return result.mappings().fetchall()

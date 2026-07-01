@@ -33,7 +33,7 @@ def embed_news():
                         "|| '/' || a.id || '.txt' AS s3_key "
                         "FROM articles a "
                         "LEFT JOIN article_embedding e ON a.id = e.id "
-                        "WHERE e.id IS NULL AND a.fetched = TRUE"
+                        "WHERE e.id IS NULL AND a.fetched = TRUE LIMIT 500"
                     )
                 )
                 return res.mappings().fetchall()

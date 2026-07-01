@@ -7,3 +7,4 @@ trafilatura
 sqlalchemy
 asyncpg
 openai
+pgvector
