@@ -5,6 +5,7 @@ import httpx
 from dotenv import load_dotenv
 
 import trafilatura
+from openai import AsyncOpenAI
 
 
 load_dotenv()
@@ -48,4 +49,34 @@ async def parse_article_content(url):
 
     response.raise_for_status()
 
-    return trafilatura.extract(response.content, favor_recall=True)
+    cleaned_html_text = trafilatura.extract(response.content, favor_recall=True)
+
+    client = AsyncOpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=os.getenv("OPENROUTER_API_KEY"),
+    )
+
+    response = await client.chat.completions.create(
+        model='cohere/command-r-08-2024',
+        temperature=0.0,
+        messages=[
+            {
+                'role': 'system',
+                'content': (
+                    "You are a strict data extraction tool. Your ONLY task is to extract "
+                    "the core stock market news article text found inside the <html_content> tags.\n\n"
+                    "CRITICAL RULES:\n"
+                    "1. Output the raw extracted news text and body paragraphs only.\n"
+                    "2. Exclude all advertisement blocks, sign-up forms, copyright lines, and link lists.\n"
+                    "3. ABSOLUTE SILENCE except for the news text. No explanations, no introduction, "
+                    "no conversation, no analysis of the code or text."
+                )
+            },
+            {
+                'role': 'user',
+                'content': f"Extract the news article text from this content:\n<html_content>\n{cleaned_html_text}\n</html_content>"
+            }
+        ]
+    )
+
+    return response.choices[0].message.content
