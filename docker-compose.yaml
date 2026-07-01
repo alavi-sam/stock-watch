@@ -9,6 +9,7 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     PYTHONPATH: /opt/airflow
     FINNHUB_API_KEY: ${FINNHUB_API_KEY}
+    OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
@@ -20,6 +21,7 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./tasks:/opt/airflow/tasks
     - ./services:/opt/airflow/services
+    - ./db:/opt/airflow/db
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"

@@ -7,6 +7,10 @@ CREATE TABLE IF NOT EXISTS articles (
     image TEXT,
     source TEXT,
     summary TEXT,
-    url TEXT
+    url TEXT,
+    fetched BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE IF NOT EXISTS full_article(
+    
+)
