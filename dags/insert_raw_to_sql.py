@@ -6,7 +6,7 @@ from airflow.operators.python import get_current_context
 from airflow.datasets import Dataset
 from services.s3_wrapper import BucketWrapper
 from sqlalchemy import text
-from dags.stock_news_dag import TICKERS
+from tasks.constants import TICKERS
 from datetime import datetime, timezone
 from tasks.connection import async_session_local
 

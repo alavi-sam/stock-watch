@@ -11,8 +11,23 @@ class BucketWrapper:
         self.bucket_name = bucket_name
         self.session = aioboto3.Session()
 
+    async def bucket_exists(self, bucket_name: str | None = None) -> bool:
+        bucket_name = bucket_name or self.bucket_name
+        try:
+            async with self.session.client('s3') as client:
+                await client.head_bucket(Bucket=bucket_name)
+            return True
+        except ClientError as e:
+            if e.response['Error']['Code'] in ('404', 'NoSuchBucket'):
+                return False
+            logger.error(f"Could not check existence of bucket {bucket_name}! Error: {str(e)}")
+            raise
+
     async def create_bucket(self, bucket_name: str | None = None):
         bucket_name = bucket_name or self.bucket_name
+        if await self.bucket_exists(bucket_name):
+            logger.info(f"Bucket already exists, skipping creation: {bucket_name}")
+            return
         try:
             async with self.session.client('s3') as client:
                 await client.create_bucket(Bucket=bucket_name)

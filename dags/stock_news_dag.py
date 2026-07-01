@@ -11,8 +11,8 @@ from services.s3_wrapper import BucketWrapper
 
 from tasks.fetch import fetch_ticker_news
 from tasks.storage import insert_raw_json
+from tasks.constants import TICKERS
 
-TICKERS = ['AAPL', 'MSFT', 'META', 'NFLX']
 raw_data = Dataset('s3://stock-watcher-raw-data/raw')
 
 @dag(
