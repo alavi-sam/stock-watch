@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE IF NOT EXISTS articles (
     id BIGINT PRIMARY KEY,
     ticker TEXT NOT NULL,
@@ -11,6 +13,8 @@ CREATE TABLE IF NOT EXISTS articles (
     fetched BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS full_article(
-    
-)
+CREATE TABLE IF NOT EXISTS article_embedding (
+    id BIGINT PRIMARY KEY REFERENCES articles(id),
+    embedding vector(2048),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);

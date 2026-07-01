@@ -47,7 +47,7 @@ services:
     restart: unless-stopped
 
   news-db:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
