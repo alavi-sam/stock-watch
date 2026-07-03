@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS articles (
     source TEXT,
     summary TEXT,
     url TEXT,
-    fetched BOOLEAN NOT NULL DEFAULT FALSE
+    fetched BOOLEAN NOT NULL DEFAULT FALSE,
+    num_try INT
 );
 
 CREATE TABLE IF NOT EXISTS article_embedding (

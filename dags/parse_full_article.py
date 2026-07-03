@@ -32,7 +32,7 @@ def parse_articles():
             async with async_session_local() as client:
                 result = await client.execute(
                     text(
-                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE LIMIT 100"
+                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE ORDER BY COALESCE(num_try, 0) ASC LIMIT 100"
                     )
                 )
                 return result.mappings().fetchall()
@@ -81,28 +81,34 @@ def parse_articles():
 
     @task
     def mark_as_parsed(row: dict):
-        id = row['id']
-        if not row['uploaded']:
-            logger.info(f"skipping mark_as_parsed for row {id}, not uploaded")
-            return 0
 
-        async def _query():
+        async def _query(row):
             async with async_session_local() as client:
-                res = await client.execute(
-                    text(
-                        "UPDATE articles "
-                        "SET fetched = TRUE "
-                        "WHERE id = :id"
-                    ),
-                    {'id': id}
-                )
+                if row['uploaded']:
+                    res = await client.execute(
+                        text(
+                            "UPDATE articles " \
+                            "SET fetched = TRUE, num_try = COALESCE(num_try, 0) + 1 "
+                            "WHERE id = :id"
+                        ),
+                        {'id': row['id']}
+                    )
+                else:
+                    res = await client.execute(
+                        text(
+                            "UPDATE articles " \
+                            "SET num_try = COALESCE(num_try, 0) + 1 " \
+                            "WHERE id = :id"
+                        ),
+                        {'id': row['id']}
+                    )
                 await client.commit()
                 if res.rowcount:
-                    logger.info(f"marked row {id} as fetched!")
+                    logger.info(f"marked row {row['id']} as fetched!")
                 else:
-                    logger.error(f"failed to mark row {id} as fetched!")
+                    logger.error(f"failed to mark row {row['id']} as fetched!")
                 return res.rowcount
-        return asyncio.run(_query())
+        return asyncio.run(_query(row))
 
     bucket = create_bucket()
     rows = query_non_fetched_news()
