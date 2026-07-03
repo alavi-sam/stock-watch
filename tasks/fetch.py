@@ -41,9 +41,11 @@ _IMPERSONATE_ORDER = ["chrome131", "chrome124", "safari17_0", "edge101"]
 
 
 async def _resolve_redirect(url: str) -> str:
-    async with httpx.AsyncClient(follow_redirects=True) as client:
+    async with httpx.AsyncClient(follow_redirects=False) as client:
         r = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
-    return str(r.url)
+    if r.status_code in (301, 302, 303, 307, 308):
+        return r.headers.get("location", url)
+    return url
 
 
 async def parse_article_content(url):
