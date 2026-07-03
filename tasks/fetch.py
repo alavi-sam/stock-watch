@@ -1,4 +1,5 @@
 import os
+import asyncio
 import logging
 
 import httpx
@@ -36,11 +37,22 @@ async def fetch_ticker_news(ticker: str, date_from: str, date_to: str, client: h
 
 
 
-async def parse_article_content(url):
-    async with AsyncSession(impersonate="chrome124") as client:
-        response = await client.get(url, allow_redirects=True)
+_IMPERSONATE_ORDER = ["chrome131", "chrome124", "safari17_0", "edge101"]
 
-    response.raise_for_status()
+
+async def parse_article_content(url):
+    response = None
+    for browser in _IMPERSONATE_ORDER:
+        async with AsyncSession(impersonate=browser) as client:
+            r = await client.get(url, allow_redirects=True)
+        if r.status_code < 400:
+            response = r
+            break
+        logger.warning(f"Got {r.status_code} with {browser} for {url}, trying next impersonation")
+        await asyncio.sleep(1)
+
+    if response is None or response.status_code >= 400:
+        response.raise_for_status()
 
     cleaned_html_text = trafilatura.extract(response.content, favor_recall=True)
 
