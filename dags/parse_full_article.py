@@ -32,7 +32,7 @@ def parse_articles():
             async with async_session_local() as client:
                 result = await client.execute(
                     text(
-                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE LIMIT 500"
+                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE LIMIT 100"
                     )
                 )
                 return result.mappings().fetchall()
@@ -45,6 +45,7 @@ def parse_articles():
     @task
     def parse_article(row: dict):
         async def _parse():
+            await asyncio.sleep(2)
             try:
                 content = await parse_article_content(row['url'])
                 logger.info(f"article parse at {row['url']}!")

@@ -2,6 +2,7 @@ import os
 import logging
 
 import httpx
+from curl_cffi.requests import AsyncSession
 from dotenv import load_dotenv
 
 import trafilatura
@@ -36,16 +37,8 @@ async def fetch_ticker_news(ticker: str, date_from: str, date_to: str, client: h
 
 
 async def parse_article_content(url):
-    async with httpx.AsyncClient(follow_redirects=True) as client:
-        response = await client.get(
-            url=url,
-            headers={
-                'User-Agent': (
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                    '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-                )
-            }
-        )
+    async with AsyncSession(impersonate="chrome124") as client:
+        response = await client.get(url, allow_redirects=True)
 
     response.raise_for_status()
 
