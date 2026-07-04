@@ -32,7 +32,7 @@ def parse_articles():
             async with async_session_local() as client:
                 result = await client.execute(
                     text(
-                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE ORDER BY COALESCE(num_try, 0) ASC LIMIT 100"
+                        "SELECT id, url, datetime, ticker FROM articles WHERE fetched = FALSE AND COALESCE(num_try, 0) < 5 ORDER BY COALESCE(num_try, 0) ASC LIMIT 100"
                     )
                 )
                 return result.mappings().fetchall()
