@@ -109,7 +109,9 @@ services:
       airflow-init:
         condition: service_completed_successfully
   stock-watch:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.web
     container_name: stock-watch-web
     restart: always
     env_file: .env
