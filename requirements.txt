@@ -9,3 +9,5 @@ sqlalchemy
 asyncpg
 openai
 pgvector
+fastapi
+uvicorn
