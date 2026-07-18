@@ -26,7 +26,9 @@ async def find_similar_db(input: str):
                 "FROM articles as a " \
                 "INNER JOIN article_embedding as e " \
                 "ON a.id = e.id " \
-                "ORDER BY e.embedding <=> CAST(:embedding AS VECTOR) ASC " \
+                "ORDER BY " \
+                "(1 - (e.embedding <=> CAST(:embedding AS VECTOR))) " \
+                "* EXP(-EXTRACT(EPOCH FROM (NOW() - a.datetime)) / 86400.0 / 30.0) DESC " \
                 "LIMIT 10;"
             ),
             {'embedding': vector_str}
@@ -34,11 +36,15 @@ async def find_similar_db(input: str):
         return res.mappings().fetchall()
     
 
+CONFIDENCE_THRESHOLD = 0.3
+
 async def retrieve(input: str):
     s3_client = BucketWrapper('stock-watcher-article-content')
     rows = await find_similar_db(input)
     results = []
     for row in rows:
+        if row['confidence'] < CONFIDENCE_THRESHOLD:
+            continue
         s3_key = f"article_content/ticker={row['ticker']}/year={row['article_datetime'].year}" \
         f"/month={row['article_datetime'].month}/day={row['article_datetime'].day}" \
         f"/hour={row['article_datetime'].hour}/{row['article_id']}.txt"
